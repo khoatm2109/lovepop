@@ -4,7 +4,6 @@ resource "aws_ecs_cluster" "lovepop_ecs_cluster" {
 }
 
 # Define security group for ECS
-
 resource "aws_security_group" "ecs_security_group" {
   vpc_id = data.aws_vpc.default.id
 
@@ -70,7 +69,7 @@ resource "aws_ecs_task_definition" "lovepop_task_definition" {
 resource "aws_ecs_service" "lovepop_service" {
   depends_on = [aws_ecs_task_definition.lovepop_task_definition]
   name            = "lovepop-service"
-  desired_count   = 1
+  desired_count   = 0
   cluster         = aws_ecs_cluster.lovepop_ecs_cluster.id
   task_definition = aws_ecs_task_definition.lovepop_task_definition.arn
   launch_type     = "FARGATE"
