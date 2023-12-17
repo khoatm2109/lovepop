@@ -1,37 +1,20 @@
+resource "aws_cloudwatch_metric_alarm" "ecs_running_tasks" {
+  count = length(aws_sns_topic.lovepop_sns.arn) > 0 && var.alarm_ecs_running_tasks_threshold > 0 ? 1 : 0
 
-# CloudWatch Alarms
-resource "aws_cloudwatch_metric_alarm" "ecs_cpu_alarm" {
-  alarm_name          = "ecs-cpu-alarm"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = "2"
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/ECS"
-  period              = "300"
-  statistic           = "Average"
-  threshold           = "80"
-  alarm_description   = "Alarm if CPU utilization is greater than or equal to 80% for 2 consecutive periods"
+  alarm_name                = "${var.alarm_prefix}-ecs-${aws_ecs_service.lovepop_service.name}-running-tasks"
+  comparison_operator       = "LessThanThreshold"
+  evaluation_periods        = "1"
+  metric_name               = "RunningTaskCount"
+  namespace                 = "ECS/ContainerInsights"
+  period                    = "30"
+  statistic                 = "Average"
+  threshold                 = var.alarm_ecs_running_tasks_threshold
+  alarm_description         = "Ecs service running tasks is lower than the threshold"
+  alarm_actions             = [aws_sns_topic.lovepop_sns.arn]
+  treat_missing_data        = "ignore"
+
   dimensions = {
-    ClusterName = aws_ecs_cluster.ecs_cluster.name
-    ServiceName = aws_ecs_service.sample_service.name
+    ClusterName = aws_ecs_cluster.lovepop_ecs_cluster.name
+    ServiceName = aws_ecs_service.lovepop_service.name
   }
-
-  alarm_actions = [] # Add SNS Topic ARN for alerting
-}
-
-resource "aws_cloudwatch_metric_alarm" "ecs_memory_alarm" {
-  alarm_name          = "ecs-memory-alarm"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = "2"
-  metric_name         = "MemoryUtilization"
-  namespace           = "AWS/ECS"
-  period              = "300"
-  statistic           = "Average"
-  threshold           = "80"
-  alarm_description   = "Alarm if Memory utilization is greater than or equal to 80% for 2 consecutive periods"
-  dimensions = {
-    ClusterName = aws_ecs_cluster.ecs_cluster.name
-    ServiceName = aws_ecs_service.sample_service.name
-  }
-
-  alarm_actions = [] # Add SNS Topic ARN for alerting
 }
